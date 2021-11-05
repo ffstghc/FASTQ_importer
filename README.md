@@ -6,7 +6,8 @@ Script for importing FASTQ files consisting of multiple sequence sets with 4 lin
 
 Features:
 - Import of files in the above described format
-- Option to output total "G" and "C" content in each full sequence
-- Option to output content of defined single base or sequence in each full sequence
-- Output of average quality score for each sequence in the file
-- Output of sample description
+- Option to output total "G" and "C" content in each data set
+- Option to output content of defined single base or sequence in each data set
+- Option to output data as FASTA formated file
+- Output of average quality score for each data set
+- Output of sample description for each data set
