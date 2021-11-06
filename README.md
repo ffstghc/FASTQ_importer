@@ -11,4 +11,4 @@ Features:
 - Option to output data as FASTA formated file
 - Output of average quality score for each data set
 - Output of sample description for each data set
-- Output of triplet converted to amino acid sequence for first sequence in file
+- Output of triplets converted to amino acid sequence for selectable sample

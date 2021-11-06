@@ -9,7 +9,7 @@ seq = []  # Sequences
 qs_enc = []  # Quality Scores (1-bit encoded)
 
 for i in range(0, len(raw_data), 4):
-    col_rows.append(raw_data[i])  # Get sample name lines
+    col_rows.append(raw_data[i].split("@")[1].strip())  # Get sample names
     seq.append(raw_data[i + 1])  # Get actual raw sequence lines
     qs_enc.append(raw_data[i + 3])  # Get 1-bit encoded quality score (QS) lines
 
@@ -31,11 +31,12 @@ for j in range(0, len(qs_enc)):
 qs_dec_split = [None] * len(qs_enc)  # List of all QSs
 qs_means = []  # List of all mean QSs
 total_qss = len(qs_enc)  # Amount of QSs
-length_qss = int(len(qs_dec_combined) / len(qs_enc))
+length_qss = int(len(qs_dec_combined) / len(qs_enc))  # Calculate length of single QS line from combined list
+
 x = 0
 while x < total_qss:
-    qs_dec_split[x] = qs_dec_combined[x * length_qss:(x * length_qss + length_qss)]
-    qs_means.append(sum(qs_dec_split[x]) / total_qss)
+    qs_dec_split[x] = qs_dec_combined[x * length_qss:(x * length_qss + length_qss)]  # Split up combined QS list
+    qs_means.append((sum(qs_dec_split[x]) / total_qss))  # Calculate mean QS of single sequence
     x += 1
 
 ###############
@@ -56,6 +57,7 @@ if mode == 1:
         amount_g.append(seq[i].count("G"))
         fraction = (amount_c[i] + amount_g[i]) / len(seq[i])  # Total amount of bases divided by sequence length
         fractions.append(fraction)
+        fractions[i] = round(fractions[i], 2)
 else:
     print("\nInput nucleoside short code (e.g. 'A', 'T', 'C', 'G' or 'ATC', 'TGC', ...):")
     base1 = input()
@@ -64,135 +66,76 @@ else:
         amount_B.append(seq[i].count(base1))
         fraction = (amount_B[i] / len(seq[i]))  # Total amount of bases divided by sequence length
         fractions.append(fraction)
+        fractions[i] = round(fractions[i], 2)
 
 ###########################
 # Combine Data into Table #
 ###########################
-col_names = "Sequence name", "%GC content", "Avg. QS"  # Columns for sequence specific table
-
+print("Sample name: | Avg. Q-Score: | 'GC' content:")
 for i in range(0, total_qss):
     if mode == 1:
-        print("Sample name: {}Average QS: {} | 'GC' content: {}".format(col_rows[i], qs_means[i], fractions[i]))
+        print("{}   |   {}  |   {}".format(col_rows[i], qs_means[i], fractions[i]))
     else:
-        print("Sample name: {}Average QS: {} | Base/sequence content: {}".format(col_rows[i], qs_means[i], fractions[i]))
+        print("{}   |   {}  |   {}".format(col_rows[i], qs_means[i], fractions[i]))
 
 ##########################################
 # Translate nucleotides into amino acids #
 ##########################################
-seq_replaced = [None] * len(seq)
+print("\n" "Input sample name to translate to amino acid sequence (e.g. 'prov-0098', 'Sample_0001') or "
+      "type 'skip' to skip:")
 
-for i in range(0, len(seq)):
-    seq_replaced[i] = seq[i].replace("T", "U")  # Replace "T" in all sequences by "U"
+ind_seq = input()  # Get input for sample to translate or skip translation
 
-length_seq = len(seq[0])
-total_acids = int(length_seq / 3)
-seq_splitted = [None] * total_acids
-y = 0
-n_seqs = len(seq)
+if ind_seq == 'skip':
+    print("Sample input for triplet to amino acid conversion skipped")
+else:
+    ind_seq = col_rows.index(ind_seq)  # Get index for sample name
 
-for i in range(0, n_seqs):
+    seq_replaced = seq[ind_seq].replace("T", "U")  # Replace "T" in all sequences by "U"
+
+    length_seq = len(seq[0])
+    total_acids = int(length_seq / 3)
+    seq_splitted = [None] * total_acids
+    y = 0
     while y < total_acids:
-        new = seq_replaced[i][y * 3:(y * 3 + 3)]
+        new = seq_replaced[y * 3:(y * 3 + 3)]
         seq_splitted[y] = new
         y += 1
 
-code_sun_dict = {
-    'UUU': 'Phe',
-    'UUC': 'Phe',
-    'UUA': 'Leu',
-    'UUG': 'Leu',
-    'CUU': 'Leu',
-    'CUC': 'Leu',
-    'CUA': 'Leu',
-    'CUG': 'Leu',
-    'AUU': 'Ile',
-    'AUC': 'Ile',
-    'AUA': 'Ile',
-    'AUG': 'Met',
-    'GUU': 'Val',
-    'GUC': 'Val',
-    'GUA': 'Val',
-    'GUG': 'Val',
-    'UCU': 'Ser',
-    'UCC': 'Ser',
-    'UCA': 'Ser',
-    'UCG': 'Ser',
-    'CCU': 'Pro',
-    'CCC': 'Pro',
-    'CCA': 'Pro',
-    'CCG': 'Pro',
-    'ACU': 'Thr',
-    'ACC': 'Thr',
-    'ACA': 'Thr',
-    'ACG': 'Thr',
-    'GCU': 'Ala',
-    'GCC': 'Ala',
-    'GCA': 'Ala',
-    'GCG': 'Ala',
-    'UAU': 'Tyr',
-    'UAC': 'Tyr',
-    'UAA': 'STOP',
-    'UAG': 'STOP',
-    'CAU': 'His',
-    'CAC': 'His',
-    'CAA': 'Gln',
-    'CAG': 'Gln',
-    'AAU': 'Asn',
-    'AAC': 'Asn',
-    'AAA': 'Lys',
-    'AAG': 'Lys',
-    'GAU': 'Asp',
-    'GAC': 'Asp',
-    'GAA': 'Glu',
-    'GAG': 'Glu',
-    'UGU': 'Cys',
-    'UGC': 'Cys',
-    'UGA': 'STOP',
-    'UGG': 'Trp',
-    'CGU': 'Arg',
-    'CGC': 'Arg',
-    'CGA': 'Arg',
-    'CGG': 'Arg',
-    'AGU': 'Ser',
-    'AGC': 'Ser',
-    'AGA': 'Arg',
-    'AGG': 'Arg',
-    'GGU': 'Gly',
-    'GGC': 'Gly',
-    'GGA': 'Gly',
-    'GGG': 'Gly'
-}
+    # Three letter codes
+    code_sun_dict = {
+        'UUU': 'Phe', 'UUC': 'Phe', 'UUA': 'Leu', 'UUG': 'Leu', 'CUU': 'Leu', 'CUC': 'Leu', 'CUA': 'Leu', 'CUG': 'Leu',
+        'AUU': 'Ile', 'AUC': 'Ile', 'AUA': 'Ile', 'AUG': 'Met', 'GUU': 'Val', 'GUC': 'Val', 'GUA': 'Val', 'GUG': 'Val',
+        'UCU': 'Ser', 'UCC': 'Ser', 'UCA': 'Ser', 'UCG': 'Ser', 'CCU': 'Pro', 'CCC': 'Pro', 'CCA': 'Pro', 'CCG': 'Pro',
+        'ACU': 'Thr', 'ACC': 'Thr', 'ACA': 'Thr', 'ACG': 'Thr', 'GCU': 'Ala', 'GCC': 'Ala', 'GCA': 'Ala', 'GCG': 'Ala',
+        'UAU': 'Tyr', 'UAC': 'Tyr', 'UAA': 'STOP', 'UAG': 'STOP', 'CAU': 'His', 'CAC': 'His', 'CAA': 'Gln',
+        'CAG': 'Gln',
+        'AAU': 'Asn', 'AAC': 'Asn', 'AAA': 'Lys', 'AAG': 'Lys', 'GAU': 'Asp', 'GAC': 'Asp', 'GAA': 'Glu', 'GAG': 'Glu',
+        'UGU': 'Cys', 'UGC': 'Cys', 'UGA': 'STOP', 'UGG': 'Trp', 'CGU': 'Arg', 'CGC': 'Arg', 'CGA': 'Arg', 'CGG': 'Arg',
+        'AGU': 'Ser', 'AGC': 'Ser', 'AGA': 'Arg', 'AGG': 'Arg', 'GGU': 'Gly', 'GGC': 'Gly', 'GGA': 'Gly', 'GGG': 'Gly'
+    }
 
-translated_single = []
-for i in seq_splitted:
-    code = code_sun_dict[i]
-    translated_single.append(code)
+    translated_single = []
+    for i in seq_splitted:
+        code = code_sun_dict[i]  # Convert triplet to amino acid
+        translated_single.append(code)
+
+    translated_single = ''.join(translated_single).split("STOP")[0]  # Break at stop codons
+    print("Amino acid sequence:\n", translated_single)
 
 ##########################
 # Convert FASTQ to FASTA #
 ##########################
-print("\nInput 'yes' if you want to output a .fasta file of the imported data. Else leave blank:")
+print("\nInput 'yes' if you want to output a .FASTA file of the imported data. Else leave blank:")
 x = input()
 if x == 'yes':
-    textfile = open('Converted.fasta', 'w')
+    textfile = open('Converted.fasta', 'w')  # Create text file
 
     for i in range(0, len(col_rows)):
-        textfile.write(col_rows[i])
-        textfile.write(seq[i])
+        textfile.write(col_rows[i])  # Add sample name
+        textfile.write("\n")
+        textfile.write(seq[i])  # Add sample sequence
     textfile.close()
-    print("\nFile exported")
+    print("\nFASTA data file exported. Bye!")
 else:
     print("\nFinished without exporting FASTA data. Bye!")
-
-""""
-# Triplet to amino acid over all sequences (NOT WORKING YET)
-seqs_translated = []
-
-def translate_seq(pos):
-    for iii in seq_replaced[pos].strip():
-        seqs_translated.append(code_sun_dict[iii])
-
-
-for j in range(0, len(seq)):
-    translate_seq(j)
-"""
