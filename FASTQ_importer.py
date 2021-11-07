@@ -10,8 +10,8 @@ qs_enc = []  # Quality Scores (1-bit encoded)
 
 for i in range(0, len(raw_data), 4):
     col_rows.append(raw_data[i].split("@")[1].strip())  # Get sample names
-    seq.append(raw_data[i + 1])  # Get actual raw sequence lines
-    qs_enc.append(raw_data[i + 3])  # Get 1-bit encoded quality score (QS) lines
+    seq.append(raw_data[i + 1].strip())  # Get actual raw sequence lines
+    qs_enc.append(raw_data[i + 3].strip())  # Get 1-bit encoded quality score (QS) lines
 
 ##########################
 # Average Quality Scores #
@@ -20,9 +20,9 @@ qs_dec_combined = []  # All QSs combined to later split them up
 
 
 def add_qs(pos):
-    for ii in qs_enc[pos].strip():  # Loop over all elements in QS sequence
+    for ii in qs_enc[pos]:  # Loop over all elements in QS sequence
         qss = ord(ii) - 33  # QS from ASCII code
-        qs_dec_combined.append(qss)
+        qs_dec_combined.append(qss)  # List of all QS
 
 
 for j in range(0, len(qs_enc)):
@@ -36,14 +36,15 @@ length_qss = int(len(qs_dec_combined) / len(qs_enc))  # Calculate length of sing
 x = 0
 while x < total_qss:
     qs_dec_split[x] = qs_dec_combined[x * length_qss:(x * length_qss + length_qss)]  # Split up combined QS list
-    qs_means.append((sum(qs_dec_split[x]) / total_qss))  # Calculate mean QS of single sequence
+    qs_means.append((sum(qs_dec_split[x]) / length_qss))  # Calculate mean QS of single sequence
+    qs_means[x] = round(qs_means[x], 4)
     x += 1
 
 ###############
 # %GC Content #
 ###############
-print("Input to calculate fraction in sequence:\n(1) Total content of 'G' and 'C'"
-      "\n(2) Specify single base or base sequence")
+print("Input to calculate fraction in sequence:\n(1) Total content of 'G' and 'C'."
+      "\n(2) Specify single base or base sequence.")
 mode = int(input())
 amount_c = []
 amount_g = []
@@ -74,11 +75,11 @@ else:
 if mode == 1:
     print("Sample name: | Avg. Q-Score: | GC content:")
     for i in range(0, total_qss):
-        print("{}   |   {}  |   {} %".format(col_rows[i], qs_means[i], fractions[i]))
+        print("{}\t|\t{}\t|\t{} %".format(col_rows[i], qs_means[i], fractions[i]))
 else:
     print("Sample name: | Avg. Q-Score: |", base1, "content:")
     for i in range(0, total_qss):
-        print("{}   |   {}  |   {} %".format(col_rows[i], qs_means[i], fractions[i]))
+        print("{}\t|\t{}\t|\t{} %".format(col_rows[i], qs_means[i], fractions[i]))
 
 ##########################################
 # Translate nucleotides into amino acids #
@@ -89,7 +90,7 @@ print("\n" "Input sample name to translate to amino acid sequence (e.g. 'prov-00
 ind_seq = input()  # Get input for sample to translate or skip translation
 
 if ind_seq == 'skip':
-    print("Sample input for triplet to amino acid conversion skipped")
+    print("Conversion of triplets to amino acid  skipped.")
 else:
     ind_seq = col_rows.index(ind_seq)  # Get index for sample name
 
@@ -123,9 +124,9 @@ else:
 
     translated_single = ''.join(translated_single).split("STOP")  # Split at stop codons
 
-print("Protein fragments (amino acids):")
-for i in range(0, len(translated_single)):
-    print(translated_single[i])
+    print("Protein fragments (translated amino acids):")
+    for i in range(0, len(translated_single)):
+        print(translated_single[i])
 
 ##########################
 # Convert FASTQ to FASTA #
@@ -139,6 +140,7 @@ if x == 'yes':
         textfile.write(col_rows[i])  # Add sample name
         textfile.write("\n")
         textfile.write(seq[i])  # Add sample sequence
+        textfile.write("\n")
     textfile.close()
     print("\nFASTA data file exported. Bye!")
 else:
