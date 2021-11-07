@@ -57,7 +57,7 @@ if mode == 1:
         amount_g.append(seq[i].count("G"))
         fraction = (amount_c[i] + amount_g[i]) / len(seq[i])  # Total amount of bases divided by sequence length
         fractions.append(fraction)
-        fractions[i] = round(fractions[i], 2)
+        fractions[i] = 100 * round(fractions[i], 4)  # Round and convert to percentage
 else:
     print("\nInput nucleoside short code (e.g. 'A', 'T', 'C', 'G' or 'ATC', 'TGC', ...):")
     base1 = input()
@@ -66,23 +66,25 @@ else:
         amount_B.append(seq[i].count(base1))
         fraction = (amount_B[i] / len(seq[i]))  # Total amount of bases divided by sequence length
         fractions.append(fraction)
-        fractions[i] = round(fractions[i], 2)
+        fractions[i] = 100 * round(fractions[i], 4)  # Round and convert to percentage
 
-###########################
-# Combine Data into Table #
-###########################
-print("Sample name: | Avg. Q-Score: | 'GC' content:")
-for i in range(0, total_qss):
-    if mode == 1:
-        print("{}   |   {}  |   {}".format(col_rows[i], qs_means[i], fractions[i]))
-    else:
-        print("{}   |   {}  |   {}".format(col_rows[i], qs_means[i], fractions[i]))
+##########################
+# Output Data into Table #
+##########################
+if mode == 1:
+    print("Sample name: | Avg. Q-Score: | GC content:")
+    for i in range(0, total_qss):
+        print("{}   |   {}  |   {} %".format(col_rows[i], qs_means[i], fractions[i]))
+else:
+    print("Sample name: | Avg. Q-Score: |", base1, "content:")
+    for i in range(0, total_qss):
+        print("{}   |   {}  |   {} %".format(col_rows[i], qs_means[i], fractions[i]))
 
 ##########################################
 # Translate nucleotides into amino acids #
 ##########################################
 print("\n" "Input sample name to translate to amino acid sequence (e.g. 'prov-0098', 'Sample_0001') or "
-      "type 'skip' to skip:")
+      "'skip' to skip:")
 
 ind_seq = input()  # Get input for sample to translate or skip translation
 
@@ -102,14 +104,13 @@ else:
         seq_splitted[y] = new
         y += 1
 
-    # Three letter codes
+    # Three letter nucleotide to amino acid coding
     code_sun_dict = {
         'UUU': 'Phe', 'UUC': 'Phe', 'UUA': 'Leu', 'UUG': 'Leu', 'CUU': 'Leu', 'CUC': 'Leu', 'CUA': 'Leu', 'CUG': 'Leu',
         'AUU': 'Ile', 'AUC': 'Ile', 'AUA': 'Ile', 'AUG': 'Met', 'GUU': 'Val', 'GUC': 'Val', 'GUA': 'Val', 'GUG': 'Val',
         'UCU': 'Ser', 'UCC': 'Ser', 'UCA': 'Ser', 'UCG': 'Ser', 'CCU': 'Pro', 'CCC': 'Pro', 'CCA': 'Pro', 'CCG': 'Pro',
         'ACU': 'Thr', 'ACC': 'Thr', 'ACA': 'Thr', 'ACG': 'Thr', 'GCU': 'Ala', 'GCC': 'Ala', 'GCA': 'Ala', 'GCG': 'Ala',
-        'UAU': 'Tyr', 'UAC': 'Tyr', 'UAA': 'STOP', 'UAG': 'STOP', 'CAU': 'His', 'CAC': 'His', 'CAA': 'Gln',
-        'CAG': 'Gln',
+        'UAU': 'Tyr', 'UAC': 'Tyr', 'UAA': 'STOP', 'UAG': 'STOP', 'CAU': 'His', 'CAC': 'His', 'CAA': 'Gln', 'CAG': 'Gln',
         'AAU': 'Asn', 'AAC': 'Asn', 'AAA': 'Lys', 'AAG': 'Lys', 'GAU': 'Asp', 'GAC': 'Asp', 'GAA': 'Glu', 'GAG': 'Glu',
         'UGU': 'Cys', 'UGC': 'Cys', 'UGA': 'STOP', 'UGG': 'Trp', 'CGU': 'Arg', 'CGC': 'Arg', 'CGA': 'Arg', 'CGG': 'Arg',
         'AGU': 'Ser', 'AGC': 'Ser', 'AGA': 'Arg', 'AGG': 'Arg', 'GGU': 'Gly', 'GGC': 'Gly', 'GGA': 'Gly', 'GGG': 'Gly'
@@ -120,13 +121,16 @@ else:
         code = code_sun_dict[i]  # Convert triplet to amino acid
         translated_single.append(code)
 
-    translated_single = ''.join(translated_single).split("STOP")[0]  # Break at stop codons
-    print("Amino acid sequence:\n", translated_single)
+    translated_single = ''.join(translated_single).split("STOP")  # Split at stop codons
+
+print("Protein fragments (amino acids):")
+for i in range(0, len(translated_single)):
+    print(translated_single[i])
 
 ##########################
 # Convert FASTQ to FASTA #
 ##########################
-print("\nInput 'yes' if you want to output a .FASTA file of the imported data. Else leave blank:")
+print("\nInput 'yes' if you want to output a .FASTA file of all the imported data. Else leave blank:")
 x = input()
 if x == 'yes':
     textfile = open('Converted.fasta', 'w')  # Create text file
