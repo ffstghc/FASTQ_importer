@@ -4,14 +4,9 @@
 project0_data = open("project0.fq", 'r')
 raw_data = project0_data.readlines()  # Read all lines to later split them up
 
-col_rows = []  # Sample/sequence names
-seq = []  # Sequences
-qs_enc = []  # Quality Scores (1-bit encoded)
-
-for i in range(0, len(raw_data), 4):
-    col_rows.append(raw_data[i].split("@")[1].strip())  # Get sample names
-    seq.append(raw_data[i + 1].strip())  # Get actual raw sequence lines
-    qs_enc.append(raw_data[i + 3].strip())  # Get 1-bit encoded quality score (QS) lines
+names = [raw_data[i].split("@")[1].strip() for i in range(0, len(raw_data), 4)]  # Sample/sequence names
+seqs = [raw_data[i + 1].strip() for i in range(0, len(raw_data), 4)]  # Sequences
+qs_enc = [raw_data[i + 3].strip() for i in range(0, len(raw_data), 4)]  # Quality Scores (1-bit encoded)
 
 ##########################
 # Average Quality Scores #
@@ -25,7 +20,7 @@ def add_qs(pos):
         qs_dec_combined.append(qss)  # List of all QS
 
 
-for j in range(0, len(qs_enc)):
+for j in range(0, len(qs_enc)):  # Add quality scores for all sequences
     add_qs(j)
 
 qs_dec_split = [None] * len(qs_enc)  # List of all QSs
@@ -53,19 +48,19 @@ fractions = []
 if mode == 1:
     base1 = "C"
     base2 = "G"
-    for i in range(0, len(seq)):
-        amount_c.append(seq[i].count("C"))
-        amount_g.append(seq[i].count("G"))
-        fraction = (amount_c[i] + amount_g[i]) / len(seq[i])  # Total amount of bases divided by sequence length
+    for i in range(0, len(seqs)):
+        amount_c.append(seqs[i].count("C"))
+        amount_g.append(seqs[i].count("G"))
+        fraction = (amount_c[i] + amount_g[i]) / len(seqs[i])  # Total amount of bases divided by sequence length
         fractions.append(fraction)
         fractions[i] = 100 * round(fractions[i], 4)  # Round and convert to percentage
 else:
     print("\nInput nucleoside short code (e.g. 'A', 'T', 'C', 'G' or 'ATC', 'TGC', ...):")
     base1 = input()
     amount_B = []
-    for i in range(0, len(seq)):
-        amount_B.append(seq[i].count(base1))
-        fraction = (amount_B[i] / len(seq[i]))  # Total amount of bases divided by sequence length
+    for i in range(0, len(seqs)):
+        amount_B.append(seqs[i].count(base1))
+        fraction = (amount_B[i] / len(seqs[i]))  # Total amount of bases divided by sequence length
         fractions.append(fraction)
         fractions[i] = 100 * round(fractions[i], 4)  # Round and convert to percentage
 
@@ -75,11 +70,11 @@ else:
 if mode == 1:
     print("Sample name: | Avg. Q-Score: | GC content:")
     for i in range(0, total_qss):
-        print("{}\t|\t{}\t|\t{} %".format(col_rows[i], qs_means[i], fractions[i]))
+        print("{}\t|\t{}\t|\t{} %".format(names[i], qs_means[i], fractions[i]))
 else:
     print("Sample name: | Avg. Q-Score: |", base1, "content:")
     for i in range(0, total_qss):
-        print("{}\t|\t{}\t|\t{} %".format(col_rows[i], qs_means[i], fractions[i]))
+        print("{}\t|\t{}\t|\t{} %".format(names[i], qs_means[i], fractions[i]))
 
 ##########################################
 # Translate nucleotides into amino acids #
@@ -92,11 +87,11 @@ ind_seq = input()  # Get input for sample to translate or skip translation
 if ind_seq == 'skip':
     print("Conversion of triplets to amino acid  skipped.")
 else:
-    ind_seq = col_rows.index(ind_seq)  # Get index for sample name
+    ind_seq = names.index(ind_seq)  # Get index for sample name
 
-    seq_replaced = seq[ind_seq].replace("T", "U")  # Replace "T" in all sequences by "U"
+    seq_replaced = seqs[ind_seq].replace("T", "U")  # Replace "T" in all sequences by "U"
 
-    length_seq = len(seq[0])
+    length_seq = len(seqs[0])
     total_acids = int(length_seq / 3)
     seq_splitted = [None] * total_acids
     y = 0
@@ -111,16 +106,14 @@ else:
         'AUU': 'Ile', 'AUC': 'Ile', 'AUA': 'Ile', 'AUG': 'Met', 'GUU': 'Val', 'GUC': 'Val', 'GUA': 'Val', 'GUG': 'Val',
         'UCU': 'Ser', 'UCC': 'Ser', 'UCA': 'Ser', 'UCG': 'Ser', 'CCU': 'Pro', 'CCC': 'Pro', 'CCA': 'Pro', 'CCG': 'Pro',
         'ACU': 'Thr', 'ACC': 'Thr', 'ACA': 'Thr', 'ACG': 'Thr', 'GCU': 'Ala', 'GCC': 'Ala', 'GCA': 'Ala', 'GCG': 'Ala',
-        'UAU': 'Tyr', 'UAC': 'Tyr', 'UAA': 'STOP', 'UAG': 'STOP', 'CAU': 'His', 'CAC': 'His', 'CAA': 'Gln', 'CAG': 'Gln',
+        'UAU': 'Tyr', 'UAC': 'Tyr', 'UAA': 'STOP', 'UAG': 'STOP', 'CAU': 'His', 'CAC': 'His', 'CAA': 'Gln',
+        'CAG': 'Gln',
         'AAU': 'Asn', 'AAC': 'Asn', 'AAA': 'Lys', 'AAG': 'Lys', 'GAU': 'Asp', 'GAC': 'Asp', 'GAA': 'Glu', 'GAG': 'Glu',
         'UGU': 'Cys', 'UGC': 'Cys', 'UGA': 'STOP', 'UGG': 'Trp', 'CGU': 'Arg', 'CGC': 'Arg', 'CGA': 'Arg', 'CGG': 'Arg',
         'AGU': 'Ser', 'AGC': 'Ser', 'AGA': 'Arg', 'AGG': 'Arg', 'GGU': 'Gly', 'GGC': 'Gly', 'GGA': 'Gly', 'GGG': 'Gly'
     }
 
-    translated_single = []
-    for i in seq_splitted:
-        code = code_sun_dict[i]  # Convert triplet to amino acid
-        translated_single.append(code)
+    translated_single = [code_sun_dict[i] for i in seq_splitted]  # Convert triplet to amino
 
     translated_single = ''.join(translated_single).split("STOP")  # Split at stop codons
 
@@ -135,12 +128,12 @@ print("\nInput 'yes' if you want to output a .FASTA file of all the imported dat
 x = input()
 if x == 'yes':
     textfile = open('Converted.fasta', 'w')  # Create text file
-
-    for i in range(0, len(col_rows)):
-        textfile.write(col_rows[i])  # Add sample name
-        textfile.write("\n")
-        textfile.write(seq[i])  # Add sample sequence
-        textfile.write("\n")
+    for j in names:
+        for i in range(0, len(names)):
+            textfile.write(names[i])  # Add sample name
+            textfile.write("\n")
+            textfile.write(seqs[i])  # Add sample sequence
+            textfile.write("\n")
     textfile.close()
     print("\nFASTA data file exported. Bye!")
 else:
