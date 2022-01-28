@@ -39,14 +39,17 @@ while x < total_qss:
 ###############
 print("Input to calculate fraction in sequence:\n(1) Total content of 'G' and 'C'."
       "\n(2) Specify single base or base sequence.")
+
 mode = int(input())
 amount_c = []
 amount_g = []
 fractions = []
 
 if mode == 1:
+
     base1 = "C"
     base2 = "G"
+
     for i in range(0, len(seqs)):
         amount_c.append(seqs[i].count("C"))
         amount_g.append(seqs[i].count("G"))
@@ -54,9 +57,12 @@ if mode == 1:
         fractions.append(fraction)
         fractions[i] = 100 * round(fractions[i], 4)  # Round and convert to percentage
 else:
+
     print("\nInput nucleoside short code (e.g. 'A', 'T', 'C', 'G' or 'ATC', 'TGC', ...):")
+
     base1 = input()
     amount_B = []
+
     for i in range(0, len(seqs)):
         amount_B.append(seqs[i].count(base1))
         fraction = (amount_B[i] / len(seqs[i]))  # Total amount of bases divided by sequence length
@@ -67,10 +73,12 @@ else:
 # Output Data into Table #
 ##########################
 if mode == 1:
+
     print("Sample name: | Avg. Q-Score: | GC content:")
     [print("{}\t|\t{}\t|\t{} %".format(names[i], qs_means[i], fractions[i])) for i in range(0, total_qss)]
 
 else:
+
     print("Sample name: | Avg. Q-Score: |", base1, "content:")
     [print("{}\t|\t{}\t|\t{} %".format(names[i], qs_means[i], fractions[i])) for i in range(0, total_qss)]
 
@@ -84,7 +92,9 @@ print("\n" "Input sample name to translate to amino acid sequence (e.g. 'prov-00
 ind_seq = input()  # Get input for sample to translate or skip translation
 
 if ind_seq == 'skip':
+
     print("Conversion of triplets to amino acid  skipped.")
+
 else:
     ind_seq = names.index(ind_seq)  # Get index for sample name
 
@@ -125,15 +135,23 @@ else:
 ##########################
 print("\nInput 'yes' if you want to output a .FASTA file of all the imported data. Else leave blank:")
 x = input()
+
 if x == 'yes':
+
     textfile = open('Converted.fasta', 'w')  # Create text file
+
     for j in names:
+
         for i in range(0, len(names)):
             textfile.write(">"+names[i])  # Add sample name
             textfile.write("\n")
             textfile.write(seqs[i])  # Add sample sequence
             textfile.write("\n")
+
     textfile.close()
+
     print("\nFASTA data file exported. Bye!")
+
 else:
+
     print("\nFinished without exporting FASTA data. Bye!")
