@@ -20,8 +20,7 @@ def add_qs(pos):
         qs_dec_combined.append(qss)  # List of all QS
 
 
-for j in range(0, len(qs_enc)):  # Add quality scores for all sequences
-    add_qs(j)
+[add_qs(j) for j in range(0, len(qs_enc))]
 
 qs_dec_split = [None] * len(qs_enc)  # List of all QSs
 qs_means = []  # List of all mean QSs
@@ -69,12 +68,12 @@ else:
 ##########################
 if mode == 1:
     print("Sample name: | Avg. Q-Score: | GC content:")
-    for i in range(0, total_qss):
-        print("{}\t|\t{}\t|\t{} %".format(names[i], qs_means[i], fractions[i]))
+    [print("{}\t|\t{}\t|\t{} %".format(names[i], qs_means[i], fractions[i])) for i in range(0, total_qss)]
+
 else:
     print("Sample name: | Avg. Q-Score: |", base1, "content:")
-    for i in range(0, total_qss):
-        print("{}\t|\t{}\t|\t{} %".format(names[i], qs_means[i], fractions[i]))
+    [print("{}\t|\t{}\t|\t{} %".format(names[i], qs_means[i], fractions[i])) for i in range(0, total_qss)]
+
 
 ##########################################
 # Translate nucleotides into amino acids #
@@ -95,6 +94,7 @@ else:
     total_acids = int(length_seq / 3)
     seq_splitted = [None] * total_acids
     y = 0
+
     while y < total_acids:
         new = seq_replaced[y * 3:(y * 3 + 3)]
         seq_splitted[y] = new
@@ -117,8 +117,8 @@ else:
     translated_single = ''.join(translated_single).split("STOP")  # Split at stop codons
 
     print("Protein fragments (translated amino acids):")
-    for i in range(0, len(translated_single)):
-        print(translated_single[i])
+    [print(translated_single[i]) for i in range(0, len(translated_single))]
+
 
 ##########################
 # Convert FASTQ to FASTA #
